@@ -2,7 +2,6 @@ package models
 
 import (
     "log"
-    "gorm.io/gorm"
     "rekber/internal/config"
 )
 
@@ -13,7 +12,6 @@ func AutoMigrate() error {
         &User{},
         &Transaction{},
         &Testimony{},
-        &AuditLog{},
     )
     
     if err != nil {
