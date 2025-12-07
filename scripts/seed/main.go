@@ -1,17 +1,16 @@
-// File: scripts/seed.go
 package main
 
 import (
-    "context"
     "fmt"
     "log"
-    "os"
+    // "os"
     "time"
 
     "github.com/joho/godotenv"
     "gorm.io/driver/postgres"
     "gorm.io/gorm"
     "rekber/internal/models"
+    "rekber/scripts/utils"
 )
 
 func main() {
@@ -22,13 +21,12 @@ func main() {
 
     // Database connection
     dsn := fmt.Sprintf(
-        "host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-        os.Getenv("DB_HOST"),
-        os.Getenv("DB_PORT"),
-        os.Getenv("DB_USER"),
-        os.Getenv("DB_PASSWORD"),
-        os.Getenv("DB_NAME"),
-        os.Getenv("DB_SSLMODE"),
+        "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+        utils.GetEnv("DB_HOST", "localhost"),
+        utils.GetEnv("DB_PORT", "5433"),
+        utils.GetEnv("DB_USER", "postgres"),
+        utils.GetEnv("DB_PASSWORD", "password"),
+        utils.GetEnv("DB_NAME", "db_rekber"),
     )
 
     db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -36,24 +34,31 @@ func main() {
         log.Fatal("Failed to connect to database:", err)
     }
 
-    // Auto migrate
-    err = db.AutoMigrate(
-        &models.User{},
-        &models.Transaction{},
-        &models.Testimony{},
-    )
-    if err != nil {
-        log.Fatal("Failed to auto migrate:", err)
+    // Check if tables exist
+    if !tablesExist(db) {
+        log.Fatal("Tables don't exist. Please run migrations first: make migrate-up")
     }
 
     // Seed data
     seedData(db)
-    log.Println("Database seeded successfully!")
+    log.Println("✅ Database seeded successfully!")
+}
+
+func tablesExist(db *gorm.DB) bool {
+    var count int64
+    db.Raw("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'").Scan(&count)
+    return count > 0
 }
 
 func seedData(db *gorm.DB) {
-    // Clear existing data
-    db.Exec("TRUNCATE TABLE testimonies, transactions, users RESTART IDENTITY CASCADE;")
+    // Check if data already exists
+    var existingUserCount int64
+    db.Model(&models.User{}).Count(&existingUserCount)
+    
+    if existingUserCount > 0 {
+        log.Println("⚠️  Data already exists, skipping seed")
+        return
+    }
 
     // Create users
     users := []models.User{

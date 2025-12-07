@@ -11,7 +11,7 @@ import (
 
     "github.com/gin-gonic/gin"
     "rekber/internal/config"
-    "rekber/internal/models"
+    // "rekber/internal/models"
     "rekber/pkg/database"
 )
 
@@ -33,11 +33,11 @@ func main() {
     }
 
     // Auto migrate GORM models untuk development
-    if config.AppConfig.AppEnv == "development" {
-        if err := models.AutoMigrate(); err != nil {
-            log.Printf("Warning: Auto migration failed: %v", err)
-        }
-    }
+    // if config.AppConfig.AppEnv == "development" {
+    //     if err := models.AutoMigrate(); err != nil {
+    //         log.Printf("Warning: Auto migration failed: %v", err)
+    //     }
+    // }
 
     // Set Gin mode
     if config.AppConfig.AppEnv == "production" {

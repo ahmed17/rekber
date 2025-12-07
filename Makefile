@@ -44,7 +44,7 @@ setup:
 	@echo "${GREEN}Installing dependencies...${NC}"
 	go mod download
 	@echo "${GREEN}Installing air for hot reload...${NC}"
-	go install github.com/cosmtrek/air@latest
+	go install github.com/cosmtrek/air@v1.49.0  # Downgrade ke versi yang support Go 1.24
 	@echo "${GREEN}Installing migrate tool...${NC}"
 	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	@echo "${GREEN}Setup completed!${NC}"
@@ -83,7 +83,7 @@ db-reset: db-drop db-create migrate-up
 ## Test database connection
 test-db:
 	@echo "${GREEN}Testing database connection...${NC}"
-	go run scripts/test-connection.go
+	@go run scripts/test/db_connection/main.go
 
 ## Migrate: Run migrations (FIXED SSL)
 migrate-up:
@@ -104,8 +104,8 @@ migrate-new:
 ## Seed: Seed database with test data
 seed:
 	@echo "${GREEN}Seeding database...${NC}"
-	@if [ -f scripts/seed.go ]; then \
-		go run scripts/seed.go; \
+	@if [ -f scripts/seed/main.go ]; then \
+		go run scripts/seed/main.go; \
 		echo "${GREEN}Database seeded successfully${NC}"; \
 	else \
 		echo "${RED}Seed file not found${NC}"; \
@@ -143,3 +143,34 @@ quick-start:
 	@$(MAKE) migrate-up
 	@echo "3. Starting development server..."
 	@$(MAKE) dev
+
+## Test repositories
+test-repo:
+	@echo "${GREEN}Testing repositories...${NC}"
+	@go run scripts/test/repositories/main.go
+
+## Test database connection
+test-db:
+	@echo "${GREEN}Testing database connection...${NC}"
+	@go run scripts/test/db_connection/main.go
+
+## Clean test data
+clean-test-data:
+	@echo "${GREEN}Cleaning test data...${NC}"
+	@psql -U postgres -d db_rekber -p 5433 -c "DELETE FROM testimonies WHERE comment LIKE '%test%' OR comment LIKE '%Test%';" 2>/dev/null || true
+	@psql -U postgres -d db_rekber -p 5433 -c "DELETE FROM transactions WHERE transaction_code LIKE 'TEST-%';" 2>/dev/null || true
+	@psql -U postgres -d db_rekber -p 5433 -c "DELETE FROM users WHERE email LIKE 'test%d@example.com' OR username LIKE 'testuser%d';" 2>/dev/null || true
+	@echo "${GREEN}Test data cleaned${NC}"
+
+## Reset database completely
+reset-db:
+	@echo "${GREEN}Resetting database completely...${NC}"
+	@./scripts/reset-db.sh
+
+## Clean test data only
+clean-test-data:
+	@echo "${GREEN}Cleaning test data...${NC}"
+	@psql -U postgres -d db_rekber -p 5433 -c "DELETE FROM testimonies WHERE comment LIKE '%test%' OR comment LIKE '%Test%';" 2>/dev/null || true
+	@psql -U postgres -d db_rekber -p 5433 -c "DELETE FROM transactions WHERE transaction_code LIKE 'TEST-%';" 2>/dev/null || true
+	@psql -U postgres -d db_rekber -p 5433 -c "DELETE FROM users WHERE email LIKE 'test%d@example.com' OR username LIKE 'testuser%d';" 2>/dev/null || true
+	@echo "${GREEN}Test data cleaned${NC}"

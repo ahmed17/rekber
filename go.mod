@@ -4,6 +4,8 @@ go 1.24.0
 
 toolchain go1.24.11
 
+replace rekber/scripts/utils => ./scripts/utils
+
 require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
@@ -11,6 +13,7 @@ require (
 	github.com/lib/pq v1.10.9
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
+	rekber/scripts/utils v0.0.0
 )
 
 require (

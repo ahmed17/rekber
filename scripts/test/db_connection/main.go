@@ -4,10 +4,10 @@ import (
     "database/sql"
     "fmt"
     "log"
-    "os"
     
     "github.com/joho/godotenv"
     _ "github.com/lib/pq"
+    "rekber/scripts/utils"
 )
 
 func main() {
@@ -19,11 +19,11 @@ func main() {
     // Build connection string
     connStr := fmt.Sprintf(
         "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-        getEnv("DB_HOST", "localhost"),
-        getEnv("DB_PORT", "5433"),
-        getEnv("DB_USER", "postgres"),
-        getEnv("DB_PASSWORD", "postgres"),
-        getEnv("DB_NAME", "db_rekber"),
+        utils.GetEnv("DB_HOST", "localhost"),
+        utils.GetEnv("DB_PORT", "5433"),
+        utils.GetEnv("DB_USER", "postgres"),
+        utils.GetEnv("DB_PASSWORD", "password"),
+        utils.GetEnv("DB_NAME", "db_rekber"),
     )
     
     fmt.Println("Connection string:", connStr)
@@ -42,11 +42,4 @@ func main() {
     }
     
     fmt.Println("✅ Database connected successfully!")
-}
-
-func getEnv(key, defaultValue string) string {
-    if value, exists := os.LookupEnv(key); exists {
-        return value
-    }
-    return defaultValue
 }
