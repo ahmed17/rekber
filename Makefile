@@ -174,3 +174,8 @@ clean-test-data:
 	@psql -U postgres -d db_rekber -p 5433 -c "DELETE FROM transactions WHERE transaction_code LIKE 'TEST-%';" 2>/dev/null || true
 	@psql -U postgres -d db_rekber -p 5433 -c "DELETE FROM users WHERE email LIKE 'test%d@example.com' OR username LIKE 'testuser%d';" 2>/dev/null || true
 	@echo "${GREEN}Test data cleaned${NC}"
+
+## Test services
+test-service:
+	@echo "${GREEN}Testing services...${NC}"
+	@go run scripts/test_service_safe.go

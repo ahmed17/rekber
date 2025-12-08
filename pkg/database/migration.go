@@ -33,7 +33,7 @@ func RunMigrations(db *sql.DB, dbName string) error {
         return fmt.Errorf("migrations folder does not exist: %s", migrationsPath)
     }
 
-    // Create migrate instance with sslmode=disable
+    // Create migrate instance
     m, err := migrate.NewWithDatabaseInstance(
         "file://"+migrationsPath,
         "postgres",
