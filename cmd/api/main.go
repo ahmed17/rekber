@@ -9,8 +9,10 @@ import (
     "syscall"
     "time"
 
+    "github.com/gin-contrib/cors"
     "github.com/gin-gonic/gin"
     "rekber/internal/config"
+    "rekber/internal/handlers"
     "rekber/internal/repositories"
     "rekber/internal/services"
     "rekber/pkg/database"
@@ -39,6 +41,10 @@ func main() {
     // Initialize service
     services.InitService(repositories.GetRepository())
 
+    // Initialize handler
+    service := services.GetService()
+    handler := handlers.NewHandler(service)
+
     // Set Gin mode
     if config.AppConfig.AppEnv == "production" {
         gin.SetMode(gin.ReleaseMode)
@@ -49,6 +55,15 @@ func main() {
     // Create router
     router := gin.Default()
 
+    // Configure CORS
+    router.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{"http://localhost:3000", config.AppConfig.AppURL},
+        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+        AllowCredentials: true,
+        MaxAge:           12 * time.Hour,
+    }))
+
     // Add middlewares
     router.Use(gin.Logger())
     router.Use(gin.Recovery())
@@ -57,8 +72,8 @@ func main() {
     router.GET("/", healthCheck)
     router.GET("/health", healthCheck)
 
-    // API v1 routes will be added here later
-    setupRoutes(router)
+    // Setup API routes
+    handler.SetupRoutes(router)
 
     // Start server with graceful shutdown
     startServer(router)
@@ -101,18 +116,6 @@ func runMigrations() error {
     }
 
     return nil
-}
-
-func setupRoutes(router *gin.Engine) {
-    // API v1 routes will be defined here
-    api := router.Group("/api/v1")
-    {
-        api.GET("/status", func(c *gin.Context) {
-            c.JSON(http.StatusOK, gin.H{
-                "message": "Rekber API v1 is running",
-            })
-        })
-    }
 }
 
 func startServer(router *gin.Engine) {
